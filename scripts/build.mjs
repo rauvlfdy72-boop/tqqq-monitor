@@ -1,0 +1,12 @@
+import {readFile,rm,mkdir,cp,copyFile} from 'node:fs/promises';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),out=resolve(root,'dist');
+const data=JSON.parse(await readFile(resolve(root,'data/market.json'),'utf8'));
+if(data.version!==1||data.rule.lookback!==200||data.rule.band!==.01||data.rule.confirm!==10||!data.history.length)throw Error('数据版本或固定规则不符');
+await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
+await cp(resolve(root,'site'),out,{recursive:true});
+await copyFile(resolve(root,'src/strategy.mjs'),resolve(out,'strategy.mjs'));
+await copyFile(resolve(root,'data/market.json'),resolve(out,'market.json'));
+await copyFile(resolve(root,'README.md'),resolve(out,'README.md'));
+console.log(`Built static monitor; ${data.history.length} daily rows through ${data.latest.date}.`);

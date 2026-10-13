@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="纳斯达克100的200日均线、1%缓冲、10日确认和周度执行监控。">
+  <title>TQQQ 每日监控</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar"><div><span class="brand-mark" aria-hidden="true">↗</span><h1>TQQQ 每日监控</h1></div><nav><a href="https://github.com/rauvlfdy72-boop/tqqq-monitor" target="_blank" rel="noreferrer">GitHub 项目 ↗</a><button id="refresh" type="button">读取最新数据</button></nav></header>
+  <main>
+    <div class="statusline"><span id="status-dot" class="dot"></span><span id="data-date">正在读取行情…</span><span id="freshness" class="chip">校验中</span><span id="fetched-at" class="right"></span></div>
+    <div id="load-error" class="error" role="alert" hidden></div>
+    <section class="card decision-card" aria-labelledby="decision-heading">
+      <div><h2 id="decision-heading">今日执行判断</h2><p id="us-date" class="label">—</p><strong id="action" class="action">正在读取</strong><p id="reason" class="reason">读取有效日收盘后，再判断今天是否执行。</p></div>
+      <div class="next"><p class="label">下一次执行时点 · 北京时间</p><strong id="next-cn">—</strong><p id="next-us" class="muted"></p><p id="next-note" class="reason"></p></div>
+    </section>
+    <div class="signals">
+      <section class="card"><h2>已确认趋势状态</h2><strong id="state" class="metric">—</strong><p id="target" class="small"></p><p id="since" class="muted"></p></section>
+      <section class="card"><h2>纳斯达克 100 收盘</h2><strong id="close" class="metric">—</strong><p id="ma" class="small"></p><p id="distance" class="muted"></p></section>
+      <section class="card"><h2>连续确认进度</h2><div class="progress-label"><span>高于均线 101%</span><strong id="up-text">—</strong></div><progress id="up-progress" aria-label="买入连续确认进度" value="0" max="10"></progress><div class="progress-label"><span>低于均线 99%</span><strong id="down-text">—</strong></div><progress id="down-progress" aria-label="卖出连续确认进度" class="down" value="0" max="10"></progress><p id="streak" class="muted"></p></section>
+    </div>
+    <section class="section" aria-labelledby="account-heading"><h2 id="account-heading">按我的账户情况查看</h2><div class="account">
+      <label>可用于本策略的现金（人民币元）<input id="cash" type="number" min="0" step="1000" placeholder="可不填写"></label>
+      <label>当前是否持有 TQQQ<select id="position"><option value="unknown">尚未填写</option><option value="none">没有持仓</option><option value="hold">已有持仓</option></select></label>
+      <div id="account-hint" class="account-hint" role="status">行情加载后显示对应提示。</div>
+    </div><p class="muted">输入只保存在你的浏览器，不会上传。<button id="clear-account" class="text-button" type="button">清空输入</button> 新现金到账本身不触发买入。</p></section>
+    <section class="section" aria-labelledby="history-heading"><div class="section-heading"><h2 id="history-heading">指数与趋势信号</h2><label>历史范围 <select id="range"><option value="90">近 3 个月</option><option value="365" selected>近 1 年</option><option value="all">2024 年至今</option></select></label></div>
+      <figure class="card chart-card"><figcaption><h3>纳斯达克 100 与 200 日均线</h3><span>确认线随均线移动；进入区域后还需连续 10 个收盘确认。</span></figcaption><div class="legend"><span style="--series:#166b70">指数收盘</span><span style="--series:#263849">200 日均线</span><span style="--series:#a2b7a9">买入确认线（101%）</span><span style="--series:#c19b76">卖出确认线（99%）</span></div><div id="price-chart" class="chart" role="group" aria-label="指数与均线图表"></div></figure>
+      <figure class="card chart-card"><figcaption><h3>指数距离均线</h3><span>（收盘 ÷ 200 日均线 − 1）× 100%；±1% 为确认边界。</span></figcaption><div id="distance-chart" class="chart short" role="group" aria-label="距均线百分比图表"></div></figure>
+      <section class="card records"><div class="section-heading"><h3>所选范围的每日记录</h3><button id="export" type="button">导出 CSV</button></div><div class="table-scroll"><table><thead><tr><th>美东交易日</th><th>指数收盘</th><th>200 日均线</th><th>距均线</th><th>上方连续日数</th><th>下方连续日数</th><th>收盘状态</th></tr></thead><tbody id="daily-body"></tbody></table></div><div class="pagination"><span id="daily-count"></span><div><button id="prev" type="button">上一页</button><span id="page-number"></span><button id="next" type="button">下一页</button></div></div></section>
+    </section>
+    <section class="section" aria-labelledby="events-heading"><h2 id="events-heading">信号切换与周度执行</h2><div class="history-grid"><section class="card records"><h3>最近的趋势状态切换</h3><div class="table-scroll"><table><thead><tr><th>确认日期</th><th>状态切换</th><th>指数</th></tr></thead><tbody id="changes-body"></tbody></table></div></section><section class="card records"><h3>最近的周度规则目标</h3><p class="muted">这是策略目标记录，不是你的实际交易记录。</p><div class="table-scroll"><table><thead><tr><th>美东执行日</th><th>依据收盘日</th><th>规则目标</th></tr></thead><tbody id="weekly-body"></tbody></table></div></section></div></section>
+    <section class="section" aria-labelledby="rules-heading"><h2 id="rules-heading">固定执行规则</h2><div class="rules"><div><strong>01 · 日收盘确认</strong><p>连续 10 日严格高于均线 101% 进入持有；连续 10 日严格低于 99% 进入现金。其余时候继承原状态。</p></div><div><strong>02 · 周度执行</strong><p>每周首个美股交易日收盘执行，休市顺延。只使用此前已确认的状态，当天收盘新信号留到下一周。</p></div><div><strong>03 · 全仓切换</strong><p>持有状态投入全部可用现金；现金状态卖出全部 TQQQ。执行前仍持有原仓位，承担原仓位波动。</p></div></div>
+      <details><summary>数据来源、更新与核验</summary><div class="source-note"><p>来源：<a href="https://fred.stlouisfed.org/series/NASDAQ100" target="_blank" rel="noreferrer">FRED / Nasdaq 的 NASDAQ100 日收盘</a>。均线用指数价格，不使用 TQQQ 自身价格。</p><p>GitHub Actions 计划每天北京时间 20:30 取行情并部署，可能略有延迟。页面每两分钟读取最新已发布数据；行情缺口、过期或日历失效时暂停买卖提示。</p><p id="calendar-note"></p><p id="source-hash"></p><p><a href="./market.json" target="_blank">查看完整公开数据与计算结果</a> · <a href="./README.md" target="_blank">项目运行说明</a></p></div></details>
+      <p class="footnote">提示按固定研究规则产生，交易需在券商手动执行。收盘成交是回测假设，实际成交以券商为准；该策略历史回撤曾超过 80%。</p>
+    </section>
+  </main>
+  <div id="notice" class="notice" role="status" hidden></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
